@@ -4,19 +4,22 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>pace</title>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garant:ital,wght@0,300;0,400;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #F8F4ED;
-      --text: #1B1814;
-      --muted: #9B8F80;
-      --accent: #B5704A;
-      --good: #5D8B6A;
-      --warn: #C0904E;
-      --bad: #B85E50;
-      --border: rgba(27,24,20,0.07);
+      --bg: #0E0D0B;
+      --surface: #17150F;
+      --text: #EDE8DF;
+      --muted: #5C5449;
+      --muted2: #8A7F74;
+      --accent: #C97D52;
+      --good: #7AAF87;
+      --warn: #D4A055;
+      --bad: #C96355;
+      --border: rgba(237,232,223,0.08);
+      --border2: rgba(237,232,223,0.13);
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; overscroll-behavior: none; }
@@ -25,254 +28,206 @@
       color: var(--text);
       font-family: 'DM Mono', monospace;
       min-height: 100dvh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 52px 28px 44px;
-      position: relative;
-      overflow-x: hidden;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 56px 28px 48px;
+      position: relative; overflow-x: hidden;
     }
     body::after {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.028'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 0;
+      content: ''; position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0;
     }
+
+    /* ── Header ── */
     .header {
       width: 100%; max-width: 340px;
-      display: flex; justify-content: space-between; align-items: baseline;
+      display: grid; grid-template-columns: 1fr auto 1fr;
+      align-items: baseline;
       margin-bottom: 40px; position: relative; z-index: 2;
     }
     .logo {
+      grid-column: 2;
       font-family: 'Cormorant Garant', serif;
-      font-style: italic; font-weight: 300; font-size: 30px;
-      letter-spacing: -0.02em; color: var(--text);
+      font-style: italic; font-weight: 300; font-size: 36px;
+      letter-spacing: -0.02em; color: var(--text); text-align: center;
     }
-    .session-time { font-size: 11px; color: var(--muted); letter-spacing: 0.10em; font-weight: 300; }
+    .session-time { grid-column: 3; text-align: right; font-size: 11px; color: var(--muted2); letter-spacing: 0.10em; font-weight: 300; }
+    .ask-btn { grid-column: 1; background: none; border: none; cursor: pointer; font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted2); padding: 0; -webkit-tap-highlight-color: transparent; display: flex; align-items: center; gap: 5px; transition: color 0.2s; }
+    .ask-btn:active { color: var(--accent); }
 
-    /* ── last session banner ── */
-    .last-session {
-      width: 100%; max-width: 340px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 14px 18px;
-      margin-bottom: 32px;
-      position: relative; z-index: 2;
-      display: none;
-    }
+    /* ── Last session ── */
+    .last-session { width: 100%; max-width: 340px; border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; margin-bottom: 28px; position: relative; z-index: 2; display: none; background: var(--surface); }
     .last-session.show { display: block; }
-    .last-session-label {
-      font-size: 8.5px; letter-spacing: 0.20em; text-transform: uppercase;
-      color: var(--muted); margin-bottom: 10px; font-weight: 300;
-    }
-    .last-session-row {
-      display: flex; gap: 0; align-items: flex-end;
-    }
+    .last-session-label { font-size: 8.5px; letter-spacing: 0.20em; text-transform: uppercase; color: var(--muted2); margin-bottom: 12px; font-weight: 300; }
+    .last-session-row { display: flex; gap: 0; align-items: flex-end; }
     .ls-stat { flex: 1; }
-    .ls-stat + .ls-stat { padding-left: 16px; border-left: 1px solid var(--border); margin-left: 16px; }
-    .ls-val {
-      font-size: 19px; font-weight: 300; letter-spacing: -0.03em;
-      color: var(--text); line-height: 1;
-    }
-    .ls-key {
-      font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase;
-      color: var(--muted); margin-top: 3px; font-weight: 300;
-    }
-    .pb-tag {
-      display: inline-block; font-size: 8px; letter-spacing: 0.14em;
-      text-transform: uppercase; padding: 2px 8px; border-radius: 100px;
-      border: 1px solid var(--good); color: var(--good);
-      background: rgba(93,139,106,0.07); margin-top: 4px;
-      font-weight: 300;
-    }
+    .ls-stat + .ls-stat { padding-left: 14px; border-left: 1px solid var(--border); margin-left: 14px; }
+    .ls-val { font-size: 19px; font-weight: 300; letter-spacing: -0.03em; color: var(--text); line-height: 1; }
+    .ls-val.slow { color: var(--warn); } .ls-val.good { color: var(--good); } .ls-val.fast { color: var(--bad); }
+    .ls-key { font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted2); margin-top: 4px; font-weight: 300; }
+    .ls-name { font-size: 9px; color: var(--accent); letter-spacing: 0.08em; margin-top: 10px; font-weight: 300; }
+    .pb-tag { display: inline-block; font-size: 7.5px; letter-spacing: 0.14em; text-transform: uppercase; padding: 2px 8px; border-radius: 100px; border: 1px solid var(--good); color: var(--good); background: rgba(122,175,135,0.08); margin-top: 4px; font-weight: 300; }
 
-    /* ── history panel ── */
-    .history-toggle {
-      width: 100%; max-width: 340px;
-      background: none; border: none; cursor: pointer;
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 0 0 12px;
-      position: relative; z-index: 2;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .history-toggle-label {
-      font-size: 8.5px; letter-spacing: 0.20em; text-transform: uppercase;
-      color: var(--muted); font-weight: 300; font-family: 'DM Mono', monospace;
-    }
-    .history-toggle-arrow {
-      font-size: 10px; color: var(--muted);
-      transition: transform 0.25s ease;
-    }
+    /* ── History ── */
+    .history-toggle { width: 100%; max-width: 340px; background: none; border: none; cursor: pointer; display: none; justify-content: space-between; align-items: center; padding: 0 0 12px; position: relative; z-index: 2; -webkit-tap-highlight-color: transparent; }
+    .history-toggle.show { display: flex; }
+    .history-toggle-label { font-size: 8.5px; letter-spacing: 0.20em; text-transform: uppercase; color: var(--muted2); font-weight: 300; font-family: 'DM Mono', monospace; }
+    .history-toggle-arrow { font-size: 10px; color: var(--muted2); transition: transform 0.25s ease; }
     .history-toggle-arrow.open { transform: rotate(180deg); }
-    .history-panel {
-      width: 100%; max-width: 340px;
-      max-height: 0; overflow: hidden;
-      transition: max-height 0.35s ease;
-      position: relative; z-index: 2;
-      margin-bottom: 0;
-    }
-    .history-panel.open { max-height: 300px; margin-bottom: 28px; }
+    .history-panel { width: 100%; max-width: 340px; max-height: 0; overflow: hidden; transition: max-height 0.35s ease; position: relative; z-index: 2; }
+    .history-panel.open { max-height: 320px; margin-bottom: 24px; }
     .history-list { display: flex; flex-direction: column; gap: 8px; padding-bottom: 4px; }
-    .history-item {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px;
-    }
-    .hi-date { font-size: 9px; color: var(--muted); letter-spacing: 0.08em; font-weight: 300; }
-    .hi-wpm { font-size: 16px; font-weight: 300; letter-spacing: -0.03em; }
-    .hi-wpm.slow { color: var(--warn); }
-    .hi-wpm.good { color: var(--good); }
-    .hi-wpm.fast { color: var(--bad); }
-    .hi-meta { font-size: 9px; color: var(--muted); text-align: right; font-weight: 300; }
+    .history-item { display: flex; justify-content: space-between; align-items: center; padding: 11px 14px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+    .hi-date { font-size: 9px; color: var(--muted2); letter-spacing: 0.06em; font-weight: 300; }
+    .hi-tag { font-size: 8px; color: var(--accent); letter-spacing: 0.08em; margin-top: 2px; font-weight: 300; }
+    .hi-wpm { font-size: 16px; font-weight: 300; letter-spacing: -0.03em; margin-top: 2px; }
+    .hi-wpm.slow { color: var(--warn); } .hi-wpm.good { color: var(--good); } .hi-wpm.fast { color: var(--bad); }
+    .hi-meta { font-size: 9px; color: var(--muted2); text-align: right; font-weight: 300; line-height: 1.75; }
+    .divider { width: 100%; max-width: 340px; height: 1px; background: var(--border); margin-bottom: 28px; position: relative; z-index: 2; display: none; }
+    .divider.show { display: block; }
 
-    .wpm-area {
-      display: flex; flex-direction: column; align-items: center;
-      margin-bottom: 44px; position: relative; z-index: 2;
-    }
-    .metric-label {
-      font-size: 9.5px; letter-spacing: 0.20em; color: var(--muted);
-      text-transform: uppercase; margin-bottom: 6px; font-weight: 300;
-    }
-    .wpm-number {
-      font-size: 104px; font-weight: 300; line-height: 1;
-      letter-spacing: -0.05em; color: var(--text);
-      transition: color 0.5s ease; width: 220px; text-align: center;
-    }
-    .wpm-number.slow { color: var(--warn); }
-    .wpm-number.good { color: var(--good); }
-    .wpm-number.fast { color: var(--bad); }
-    .wpm-number.idle { color: var(--muted); }
-    .pace-tag {
-      margin-top: 14px; display: inline-block;
-      font-size: 9.5px; letter-spacing: 0.14em; text-transform: uppercase;
-      padding: 5px 14px; border-radius: 100px;
-      border: 1px solid var(--border); color: var(--muted);
-      transition: all 0.45s ease; font-weight: 300;
-    }
-    .pace-tag.slow { border-color: var(--warn); color: var(--warn); background: rgba(192,144,78,0.07); }
-    .pace-tag.good { border-color: var(--good); color: var(--good); background: rgba(93,139,106,0.07); }
-    .pace-tag.fast { border-color: var(--bad);  color: var(--bad);  background: rgba(184,94,80,0.07); }
-    .vol-section {
-      width: 100%; max-width: 340px; margin-bottom: 32px;
-      position: relative; z-index: 2; opacity: 0;
-      transform: translateY(8px);
-      transition: opacity 0.4s ease, transform 0.4s ease;
-    }
+    /* ── WPM ── */
+    .wpm-area { display: flex; flex-direction: column; align-items: center; margin-bottom: 32px; position: relative; z-index: 2; }
+    .metric-label { font-size: 9.5px; letter-spacing: 0.20em; color: var(--muted2); text-transform: uppercase; margin-bottom: 6px; font-weight: 300; }
+    .wpm-number { font-size: 108px; font-weight: 300; line-height: 1; letter-spacing: -0.05em; color: var(--text); transition: color 0.5s ease; width: 240px; text-align: center; }
+    .wpm-number.slow { color: var(--warn); } .wpm-number.good { color: var(--good); } .wpm-number.fast { color: var(--bad); } .wpm-number.idle { color: var(--muted); }
+
+    .target-strip { margin-top: 12px; display: flex; gap: 7px; align-items: center; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted2); font-weight: 300; }
+    .target-range { display: flex; gap: 3px; }
+    .tr-seg { width: 18px; height: 3px; border-radius: 100px; background: var(--muted); }
+    .tr-seg.active { background: var(--good); }
+
+    .pace-tag { margin-top: 12px; display: inline-block; font-size: 11px; letter-spacing: 0.10em; text-transform: uppercase; padding: 6px 18px; border-radius: 100px; border: 1px solid var(--border); color: var(--muted2); transition: all 0.45s ease; font-weight: 300; }
+    .pace-tag.slow { border-color: var(--warn); color: var(--warn); background: rgba(212,160,85,0.08); }
+    .pace-tag.good { border-color: var(--good); color: var(--good); background: rgba(122,175,135,0.08); }
+    .pace-tag.fast { border-color: var(--bad); color: var(--bad); background: rgba(201,99,85,0.08); }
+
+    /* ── Volume ── */
+    .vol-section { width: 100%; max-width: 340px; margin-bottom: 30px; position: relative; z-index: 2; opacity: 0; transform: translateY(8px); transition: opacity 0.4s ease, transform 0.4s ease; }
     .vol-section.show { opacity: 1; transform: translateY(0); }
-    .vol-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
-    .vol-reading { font-size: 11px; color: var(--muted); font-weight: 300; transition: color 0.25s; }
-    .vol-reading.quiet { color: var(--warn); }
-    .vol-reading.good  { color: var(--good); }
-    .vol-reading.loud  { color: var(--bad); }
-    .vol-track {
-      height: 5px; background: rgba(27,24,20,0.07);
-      border-radius: 100px; overflow: hidden; position: relative;
-    }
-    .vol-zone {
-      position: absolute; top: 0; bottom: 0;
-      left: 18%; width: 37%;
-      background: rgba(93,139,106,0.13);
-      border-radius: 100px; pointer-events: none;
-    }
-    .vol-fill {
-      height: 100%; width: 0%; border-radius: 100px; background: var(--muted);
-      transition: width 0.07s linear, background 0.3s ease;
-    }
-    .vol-fill.quiet { background: var(--warn); }
-    .vol-fill.good  { background: var(--good); }
-    .vol-fill.loud  { background: var(--bad); }
-    .vol-hint {
-      margin-top: 7px; font-size: 9.5px; letter-spacing: 0.10em;
-      text-align: right; color: transparent;
-      transition: color 0.3s; font-weight: 300; text-transform: uppercase;
-    }
-    .vol-hint.quiet { color: var(--warn); }
-    .vol-hint.good  { color: var(--good); }
-    .vol-hint.loud  { color: var(--bad); }
-    .stats-row {
-      width: 100%; max-width: 340px; display: flex; gap: 0;
-      margin-bottom: 36px; position: relative; z-index: 2;
-      opacity: 0; transition: opacity 0.4s ease 0.1s;
-    }
+    .vol-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
+    .vol-reading { font-size: 11px; color: var(--muted2); font-weight: 300; transition: color 0.3s; }
+    .vol-reading.quiet { color: var(--warn); } .vol-reading.good { color: var(--good); } .vol-reading.loud { color: var(--bad); }
+    .vol-track { height: 8px; background: rgba(237,232,223,0.05); border-radius: 100px; overflow: visible; position: relative; }
+    .vol-zone { position: absolute; top: 0; bottom: 0; left: 18%; width: 37%; background: rgba(122,175,135,0.15); border-radius: 100px; border: 1px solid rgba(122,175,135,0.3); pointer-events: none; }
+    .vol-zone-label { position: absolute; top: -17px; left: 50%; transform: translateX(-50%); font-size: 8px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--good); font-weight: 300; white-space: nowrap; opacity: 0.8; }
+    .vol-fill { height: 100%; width: 0%; border-radius: 100px; background: var(--muted2); transition: width 0.12s ease-out, background 0.35s ease; }
+    .vol-fill.quiet { background: var(--warn); } .vol-fill.good { background: var(--good); } .vol-fill.loud { background: var(--bad); }
+    .vol-hint { margin-top: 13px; font-size: 13px; letter-spacing: 0.08em; text-align: center; color: transparent; transition: color 0.35s; font-weight: 300; text-transform: uppercase; }
+    .vol-hint.quiet { color: var(--warn); } .vol-hint.good { color: var(--good); } .vol-hint.loud { color: var(--bad); }
+
+    /* ── Stats ── */
+    .stats-row { width: 100%; max-width: 340px; display: flex; gap: 0; margin-bottom: 32px; position: relative; z-index: 2; opacity: 0; transition: opacity 0.4s ease 0.1s; }
     .stats-row.show { opacity: 1; }
     .stat { flex: 1; display: flex; flex-direction: column; gap: 3px; }
-    .stat + .stat { padding-left: 20px; border-left: 1px solid var(--border); margin-left: 20px; }
-    .stat-label { font-size: 9px; letter-spacing: 0.18em; color: var(--muted); text-transform: uppercase; font-weight: 300; }
+    .stat + .stat { padding-left: 18px; border-left: 1px solid var(--border); margin-left: 18px; }
+    .stat-label { font-size: 9px; letter-spacing: 0.18em; color: var(--muted2); text-transform: uppercase; font-weight: 300; }
     .stat-value { font-size: 22px; font-weight: 300; color: var(--text); letter-spacing: -0.03em; }
-    .tx-section {
-      width: 100%; max-width: 340px; flex: 1;
-      display: flex; flex-direction: column;
-      margin-bottom: 36px; position: relative; z-index: 2;
-    }
-    .tx-box { min-height: 72px; max-height: 130px; overflow-y: auto; scrollbar-width: none; }
+
+    /* ── Transcript ── */
+    .tx-section { width: 100%; max-width: 340px; flex: 1; display: flex; flex-direction: column; margin-bottom: 32px; position: relative; z-index: 2; }
+    .tx-box { min-height: 64px; max-height: 120px; overflow-y: auto; scrollbar-width: none; }
     .tx-box::-webkit-scrollbar { display: none; }
-    .tx-final { font-family: 'Cormorant Garant', serif; font-weight: 300; font-size: 18px; line-height: 1.70; color: var(--text); letter-spacing: 0.01em; }
-    .tx-interim { font-family: 'Cormorant Garant', serif; font-weight: 300; font-size: 18px; line-height: 1.70; color: var(--muted); font-style: italic; }
+    .tx-final { font-family: 'Cormorant Garant', serif; font-weight: 300; font-size: 18px; line-height: 1.75; color: var(--text); letter-spacing: 0.01em; }
+    .tx-interim { font-family: 'Cormorant Garant', serif; font-weight: 300; font-size: 18px; line-height: 1.75; color: var(--muted2); font-style: italic; }
     .tx-placeholder { font-family: 'Cormorant Garant', serif; font-style: italic; font-weight: 300; font-size: 17px; color: var(--muted); line-height: 1.65; }
+
+    /* ── Button ── */
     .btn-wrap { width: 100%; max-width: 340px; position: relative; z-index: 2; }
-    .record-btn {
-      width: 100%; height: 62px; border: none; border-radius: 100px;
-      background: var(--text); color: var(--bg);
-      font-family: 'DM Mono', monospace; font-weight: 300;
-      font-size: 11.5px; letter-spacing: 0.17em; text-transform: uppercase;
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
-      gap: 10px; transition: background 0.3s ease, transform 0.15s ease;
-      -webkit-tap-highlight-color: transparent;
-    }
+    .record-btn { width: 100%; height: 62px; border: none; border-radius: 100px; background: var(--text); color: var(--bg); font-family: 'DM Mono', monospace; font-weight: 300; font-size: 11.5px; letter-spacing: 0.17em; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: background 0.3s ease, transform 0.15s ease; -webkit-tap-highlight-color: transparent; }
     .record-btn:active { transform: scale(0.975); }
-    .record-btn.live { background: var(--accent); }
+    .record-btn.live { background: var(--accent); color: var(--bg); }
     .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: 0.7; flex-shrink: 0; }
     .dot.blink { animation: blink 1.3s ease-in-out infinite; }
     @keyframes blink { 0%, 100% { opacity: 0.7; } 50% { opacity: 0.15; } }
+
+    /* ── Save sheet ── */
+    .sheet-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+    .sheet-backdrop.show { opacity: 1; pointer-events: all; }
+    .sheet { position: fixed; bottom: 0; left: 0; right: 0; background: #1A1812; border-radius: 20px 20px 0 0; padding: 28px 28px 52px; z-index: 11; transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.32,0.72,0,1); }
+    .sheet.show { transform: translateY(0); }
+    .sheet-handle { width: 36px; height: 4px; background: var(--border2); border-radius: 100px; margin: 0 auto 24px; }
+    .sheet-title { font-family: 'Cormorant Garant', serif; font-style: italic; font-weight: 300; font-size: 24px; color: var(--text); margin-bottom: 6px; }
+    .sheet-sub { font-size: 9.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted2); font-weight: 300; margin-bottom: 24px; }
+    .sheet-input { width: 100%; background: none; border: none; border-bottom: 1px solid var(--border2); padding: 10px 0; font-family: 'Cormorant Garant', serif; font-weight: 300; font-size: 20px; color: var(--text); outline: none; margin-bottom: 20px; }
+    .sheet-input::placeholder { color: var(--muted); }
+    .tag-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
+    .tag-chip { padding: 6px 14px; border-radius: 100px; border: 1px solid var(--border2); font-size: 9.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted2); background: none; font-family: 'DM Mono', monospace; cursor: pointer; transition: all 0.2s ease; -webkit-tap-highlight-color: transparent; }
+    .tag-chip.selected { border-color: var(--accent); color: var(--accent); background: rgba(201,125,82,0.1); }
+    .sheet-save { width: 100%; height: 56px; border: none; border-radius: 100px; background: var(--text); color: var(--bg); font-family: 'DM Mono', monospace; font-weight: 300; font-size: 11px; letter-spacing: 0.17em; text-transform: uppercase; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: transform 0.15s ease; }
+    .sheet-save:active { transform: scale(0.975); }
+    .sheet-skip { width: 100%; background: none; border: none; font-family: 'DM Mono', monospace; font-size: 9.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted2); cursor: pointer; padding: 14px 0 0; -webkit-tap-highlight-color: transparent; }
+
+    /* ── Ask Claude sheet ── */
+    .claude-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 20; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+    .claude-backdrop.show { opacity: 1; pointer-events: all; }
+    .claude-sheet { position: fixed; bottom: 0; left: 0; right: 0; background: #1A1812; border-radius: 20px 20px 0 0; padding: 24px 24px 48px; z-index: 21; transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.32,0.72,0,1); max-height: 82dvh; display: flex; flex-direction: column; }
+    .claude-sheet.show { transform: translateY(0); }
+    .claude-handle { width: 36px; height: 4px; background: var(--border2); border-radius: 100px; margin: 0 auto 20px; flex-shrink: 0; }
+    .claude-title { font-family: 'Cormorant Garant', serif; font-style: italic; font-weight: 300; font-size: 22px; color: var(--text); margin-bottom: 16px; flex-shrink: 0; }
+    .claude-msgs { flex: 1; overflow-y: auto; scrollbar-width: none; display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; min-height: 0; }
+    .claude-msgs::-webkit-scrollbar { display: none; }
+    .msg { padding: 12px 14px; border-radius: 14px; font-size: 13px; line-height: 1.65; font-weight: 300; }
+    .msg.user { background: var(--accent); color: #fff; align-self: flex-end; max-width: 88%; border-bottom-right-radius: 4px; }
+    .msg.claude { background: rgba(237,232,223,0.06); color: var(--text); align-self: flex-start; max-width: 92%; border-bottom-left-radius: 4px; font-family: 'Cormorant Garant', serif; font-size: 15px; }
+    .msg.thinking { color: var(--muted2); font-style: italic; font-family: 'Cormorant Garant', serif; font-size: 14px; background: none; padding: 4px 0; }
+    .claude-input-row { display: flex; gap: 10px; align-items: flex-end; flex-shrink: 0; border-top: 1px solid var(--border); padding-top: 14px; }
+    .claude-input { flex: 1; background: none; border: none; font-family: 'Cormorant Garant', serif; font-weight: 300; font-size: 17px; color: var(--text); outline: none; resize: none; line-height: 1.5; max-height: 80px; }
+    .claude-input::placeholder { color: var(--muted); }
+    .claude-send { background: var(--accent); color: #fff; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 14px; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; transition: transform 0.15s; }
+    .claude-send:active { transform: scale(0.9); }
+    .claude-send:disabled { opacity: 0.35; }
+    .apikey-note { font-size: 13px; color: var(--muted2); line-height: 1.75; margin-bottom: 18px; flex-shrink: 0; font-family: 'Cormorant Garant', serif; font-weight: 300; }
+    .apikey-input { width: 100%; background: none; border: none; border-bottom: 1px solid var(--border2); padding: 10px 0; font-family: 'DM Mono', monospace; font-weight: 300; font-size: 13px; color: var(--text); outline: none; margin-bottom: 18px; flex-shrink: 0; letter-spacing: 0.04em; }
+    .apikey-input::placeholder { color: var(--muted); }
+    .apikey-save { width: 100%; height: 52px; border: none; border-radius: 100px; background: var(--text); color: var(--bg); font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; flex-shrink: 0; }
     .no-support { font-size: 13px; color: var(--bad); line-height: 1.65; text-align: center; padding: 16px 0; }
-    .divider { width: 100%; max-width: 340px; height: 1px; background: var(--border); margin-bottom: 24px; position: relative; z-index: 2; }
   </style>
 </head>
 <body>
+
   <div class="header">
+    <button class="ask-btn" onclick="openClaude()">
+      <span style="font-size:12px">✦</span><span>ask</span>
+    </button>
     <span class="logo">pace</span>
     <span class="session-time" id="timer">00:00</span>
   </div>
 
-  <!-- last session summary -->
   <div class="last-session" id="lastSession">
     <div class="last-session-label">last session</div>
     <div class="last-session-row">
-      <div class="ls-stat">
-        <div class="ls-val" id="lsWpm">—</div>
-        <div class="ls-key">avg wpm</div>
-        <div id="lsPb"></div>
-      </div>
-      <div class="ls-stat">
-        <div class="ls-val" id="lsWords">—</div>
-        <div class="ls-key">words</div>
-      </div>
-      <div class="ls-stat">
-        <div class="ls-val" id="lsClarity">—</div>
-        <div class="ls-key">clarity</div>
-      </div>
-      <div class="ls-stat">
-        <div class="ls-val" id="lsDuration">—</div>
-        <div class="ls-key">duration</div>
-      </div>
+      <div class="ls-stat"><div class="ls-val" id="lsWpm">—</div><div class="ls-key">avg wpm</div><div id="lsPb"></div></div>
+      <div class="ls-stat"><div class="ls-val" id="lsWords">—</div><div class="ls-key">words</div></div>
+      <div class="ls-stat"><div class="ls-val" id="lsClarity">—</div><div class="ls-key">clarity</div></div>
+      <div class="ls-stat"><div class="ls-val" id="lsDuration">—</div><div class="ls-key">duration</div></div>
     </div>
+    <div class="ls-name" id="lsName"></div>
   </div>
 
-  <!-- session history accordion -->
-  <button class="history-toggle" id="historyToggle" onclick="toggleHistory()" style="display:none">
+  <button class="history-toggle" id="historyToggle" onclick="toggleHistory()">
     <span class="history-toggle-label">session history</span>
     <span class="history-toggle-arrow" id="historyArrow">▾</span>
   </button>
   <div class="history-panel" id="historyPanel">
     <div class="history-list" id="historyList"></div>
   </div>
-
-  <div class="divider" id="divider" style="display:none"></div>
+  <div class="divider" id="divider"></div>
 
   <div class="wpm-area">
     <div class="metric-label">words per minute</div>
     <div class="wpm-number idle" id="wpm">—</div>
+    <div class="target-strip">
+      <span>aim</span>
+      <div class="target-range">
+        <div class="tr-seg"></div>
+        <div class="tr-seg active"></div>
+        <div class="tr-seg active"></div>
+        <div class="tr-seg active"></div>
+        <div class="tr-seg"></div>
+      </div>
+      <span>110 – 165</span>
+    </div>
     <div class="pace-tag" id="paceTag">tap to begin</div>
   </div>
 
@@ -282,7 +237,7 @@
       <span class="vol-reading" id="volReading">—</span>
     </div>
     <div class="vol-track">
-      <div class="vol-zone"></div>
+      <div class="vol-zone"><div class="vol-zone-label">ideal range</div></div>
       <div class="vol-fill" id="volFill"></div>
     </div>
     <div class="vol-hint" id="volHint"></div>
@@ -296,9 +251,7 @@
 
   <div class="tx-section">
     <div class="metric-label" style="margin-bottom:11px">transcript</div>
-    <div class="tx-box" id="txBox">
-      <span class="tx-placeholder">your words will appear here...</span>
-    </div>
+    <div class="tx-box" id="txBox"><span class="tx-placeholder">your words will appear here...</span></div>
   </div>
 
   <div class="btn-wrap">
@@ -308,103 +261,76 @@
     </button>
   </div>
 
+  <div class="sheet-backdrop" id="sheetBackdrop" onclick="skipSave()"></div>
+  <div class="sheet" id="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">Name this session</div>
+    <div class="sheet-sub" id="sheetSummary">—</div>
+    <input class="sheet-input" id="sheetInput" placeholder="e.g. pitch practice, presentation run..." maxlength="40">
+    <div class="tag-row">
+      <button class="tag-chip" onclick="selectTag(this)" data-tag="pitch">pitch</button>
+      <button class="tag-chip" onclick="selectTag(this)" data-tag="presentation">presentation</button>
+      <button class="tag-chip" onclick="selectTag(this)" data-tag="casual">casual</button>
+      <button class="tag-chip" onclick="selectTag(this)" data-tag="interview">interview</button>
+      <button class="tag-chip" onclick="selectTag(this)" data-tag="content">content</button>
+    </div>
+    <button class="sheet-save" onclick="saveAndClose()">save session</button>
+    <button class="sheet-skip" onclick="skipSave()">skip</button>
+  </div>
+
+  <div class="claude-backdrop" id="claudeBackdrop" onclick="closeClaude()"></div>
+  <div class="claude-sheet" id="claudeSheet">
+    <div class="claude-handle"></div>
+    <div class="claude-title">ask pace</div>
+    <div id="apiSetup">
+      <div class="apikey-note">To use this, paste your Anthropic API key below. It stays on your device only. Get one free at console.anthropic.com</div>
+      <input class="apikey-input" id="apiKeyInput" type="password" placeholder="sk-ant-...">
+      <button class="apikey-save" onclick="saveApiKey()">save key and continue</button>
+    </div>
+    <div id="chatArea" style="display:none; flex:1; overflow:hidden; flex-direction:column; min-height:0;">
+      <div class="claude-msgs" id="claudeMsgs"></div>
+      <div class="claude-input-row">
+        <textarea class="claude-input" id="claudeInput" placeholder="ask anything about your practice..." rows="1" onkeydown="handleKey(event)"></textarea>
+        <button class="claude-send" id="claudeSend" onclick="sendMsg()">↑</button>
+      </div>
+    </div>
+  </div>
+
   <script>
   (() => {
-    const STORAGE_KEY = 'pace_sessions';
-    const MAX_SESSIONS = 10;
+    const STORAGE_KEY = 'pace_sessions', APIKEY_KEY = 'pace_apikey', MAX_SESSIONS = 20;
+    function loadSessions() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch(e) { return []; } }
+    function storeSessions(s) { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); }
+    function personalBest() { const s = loadSessions(); return s.length ? Math.max(...s.map(x => x.avgWpm)) : null; }
+    function fmtDuration(s) { const m = Math.floor(s/60); return m > 0 ? m+'m '+String(s%60).padStart(2,'0')+'s' : s+'s'; }
+    function fmtDate(ts) { const d = new Date(ts); return d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}); }
+    function paceClass(w) { return w < 110 ? 'slow' : w <= 165 ? 'good' : 'fast'; }
 
-    // ── storage helpers ─────────────────────────────────
-    function loadSessions() {
-      try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
-      catch(e) { return []; }
-    }
-
-    function saveSession(session) {
-      const sessions = loadSessions();
-      sessions.unshift(session);
-      if (sessions.length > MAX_SESSIONS) sessions.pop();
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
-    }
-
-    function personalBest() {
-      const sessions = loadSessions();
-      if (!sessions.length) return null;
-      return Math.max(...sessions.map(s => s.avgWpm));
-    }
-
-    function fmtDuration(secs) {
-      const m = Math.floor(secs / 60), s = secs % 60;
-      return m > 0 ? m + 'm ' + String(s).padStart(2,'0') + 's' : s + 's';
-    }
-
-    function fmtDate(ts) {
-      const d = new Date(ts);
-      return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
-        + ' ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-    }
-
-    // ── render on load ──────────────────────────────────
     function renderLastSession() {
-      const sessions = loadSessions();
-      if (!sessions.length) return;
-
-      const last = sessions[0];
-      const pb = personalBest();
-      const paceClass = w => w < 110 ? 'slow' : w <= 165 ? 'good' : 'fast';
-
+      const sessions = loadSessions(); if (!sessions.length) return;
+      const last = sessions[0], pb = personalBest();
       document.getElementById('lastSession').classList.add('show');
-      document.getElementById('lsWpm').textContent = last.avgWpm;
-      document.getElementById('lsWpm').className = 'ls-val ' + paceClass(last.avgWpm);
+      const wEl = document.getElementById('lsWpm'); wEl.textContent = last.avgWpm; wEl.className = 'ls-val '+paceClass(last.avgWpm);
       document.getElementById('lsWords').textContent = last.words;
-      document.getElementById('lsClarity').textContent = last.clarity ? last.clarity + '%' : '—';
+      document.getElementById('lsClarity').textContent = last.clarity ? last.clarity+'%' : '—';
       document.getElementById('lsDuration').textContent = fmtDuration(last.duration);
-
-      if (last.avgWpm === pb) {
-        document.getElementById('lsPb').innerHTML = '<span class="pb-tag">personal best</span>';
-      }
-
-      if (sessions.length > 1) {
-        document.getElementById('historyToggle').style.display = 'flex';
-        document.getElementById('divider').style.display = 'block';
-        renderHistoryList(sessions);
-      }
+      document.getElementById('lsPb').innerHTML = last.avgWpm === pb ? '<span class="pb-tag">personal best</span>' : '';
+      document.getElementById('lsName').textContent = last.name || '';
+      if (sessions.length > 1) { document.getElementById('historyToggle').classList.add('show'); document.getElementById('divider').classList.add('show'); renderHistoryList(sessions); }
     }
-
     function renderHistoryList(sessions) {
       const pb = personalBest();
-      const paceClass = w => w < 110 ? 'slow' : w <= 165 ? 'good' : 'fast';
-      const list = document.getElementById('historyList');
-      list.innerHTML = sessions.slice(1).map(s => `
-        <div class="history-item">
-          <div>
-            <div class="hi-date">${fmtDate(s.ts)}</div>
-            <div class="hi-wpm ${paceClass(s.avgWpm)}">${s.avgWpm} <span style="font-size:11px;color:var(--muted)">wpm</span>${s.avgWpm === pb ? ' <span style="font-size:8px;color:var(--good);letter-spacing:0.1em">PB</span>' : ''}</div>
-          </div>
-          <div class="hi-meta">
-            ${s.words} words<br>
-            ${fmtDuration(s.duration)}
-          </div>
-        </div>
-      `).join('');
+      document.getElementById('historyList').innerHTML = sessions.slice(1).map(s =>
+        `<div class="history-item"><div><div class="hi-date">${fmtDate(s.ts)}</div>${s.name?`<div class="hi-tag">${s.name}</div>`:''}<div class="hi-wpm ${paceClass(s.avgWpm)}">${s.avgWpm} <span style="font-size:11px;color:var(--muted2)">wpm</span>${s.avgWpm===pb?' <span style="font-size:8px;color:var(--good)">PB</span>':''}</div></div><div class="hi-meta">${s.words} words<br>${fmtDuration(s.duration)}</div></div>`
+      ).join('');
     }
+    window.toggleHistory = function() { document.getElementById('historyPanel').classList.toggle('open'); document.getElementById('historyArrow').classList.toggle('open'); };
 
-    window.toggleHistory = function() {
-      const panel = document.getElementById('historyPanel');
-      const arrow = document.getElementById('historyArrow');
-      panel.classList.toggle('open');
-      arrow.classList.toggle('open');
-    };
-
-    // ── recording state ─────────────────────────────────
-    let live = false, audioCtx, analyser, micSrc, rafId, recognition;
-    let startTs = null, timerInt = null, totalWords = 0, wpmBuf = [], confBuf = [], finalTx = '', dataArr;
-    let lastClarity = null;
-
+    let live=false,audioCtx,analyser,micSrc,rafId,recognition,startTs=null,timerInt=null,totalWords=0,wpmBuf=[],confBuf=[],finalTx='',dataArr,lastClarity=null,pendingSession=null,volBuf=[];
     const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-    function paceClass(w) { return w < 110 ? 'slow' : w <= 165 ? 'good' : 'fast'; }
-    const paceMsg = { slow: 'take your time', good: 'good pace', fast: 'breathe. slow down.' };
+    const paceMsg = { slow:'take your time', good:'good pace', fast:'breathe. slow down.' };
     function volClass(v) { return v < 18 ? 'quiet' : v <= 55 ? 'good' : 'loud'; }
-    const volMsg = { quiet: 'a little louder', good: 'clear', loud: 'dial it back' };
+    const volMsg = { quiet:'a little louder', good:'clear', loud:'dial it back' };
 
     window.toggle = async function() { live ? stop() : await start(); };
 
@@ -412,145 +338,106 @@
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        analyser = audioCtx.createAnalyser();
-        analyser.fftSize = 512; analyser.smoothingTimeConstant = 0.75;
-        micSrc = audioCtx.createMediaStreamSource(stream);
-        micSrc.connect(analyser);
+        analyser = audioCtx.createAnalyser(); analyser.fftSize = 1024; analyser.smoothingTimeConstant = 0.82;
+        micSrc = audioCtx.createMediaStreamSource(stream); micSrc.connect(analyser);
         dataArr = new Uint8Array(analyser.frequencyBinCount);
         if (SpeechRec) {
-          recognition = new SpeechRec();
-          recognition.continuous = true; recognition.interimResults = true; recognition.lang = 'en-GB';
+          recognition = new SpeechRec(); recognition.continuous=true; recognition.interimResults=true; recognition.lang='en-GB';
           recognition.onresult = onResult;
-          recognition.onerror = e => { if (e.error !== 'no-speech' && e.error !== 'aborted') console.warn(e.error); };
+          recognition.onerror = e => { if (e.error!=='no-speech'&&e.error!=='aborted') console.warn(e.error); };
           recognition.onend = () => { if (live) recognition.start(); };
           recognition.start();
         }
-        live = true; startTs = Date.now(); totalWords = 0; wpmBuf = []; confBuf = []; finalTx = ''; lastClarity = null;
+        live=true; startTs=Date.now(); totalWords=0; wpmBuf=[]; confBuf=[]; finalTx=''; lastClarity=null; volBuf=[];
         document.getElementById('recordBtn').classList.add('live');
-        document.getElementById('btnLabel').textContent = 'stop session';
+        document.getElementById('btnLabel').textContent='stop session';
         document.getElementById('dot').classList.add('blink');
         document.getElementById('volSection').classList.add('show');
         document.getElementById('statsRow').classList.add('show');
-        document.getElementById('txBox').innerHTML = '';
-        document.getElementById('wpm').className = 'wpm-number';
-        timerInt = setInterval(tick, 1000); volLoop();
+        document.getElementById('txBox').innerHTML='';
+        document.getElementById('wpm').className='wpm-number';
+        timerInt=setInterval(tick,1000); volLoop();
       } catch(e) { alert('Please allow microphone access to use pace.'); }
     }
 
     function stop() {
-      live = false;
-      if (recognition) { recognition.abort(); recognition = null; }
-      if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-      if (audioCtx) { audioCtx.close(); audioCtx = null; }
-      if (timerInt) { clearInterval(timerInt); timerInt = null; }
-
-      document.getElementById('volFill').style.width = '0%';
-      document.getElementById('volFill').className = 'vol-fill';
-      document.getElementById('volReading').textContent = '—';
-      document.getElementById('volReading').className = 'vol-reading';
-      document.getElementById('volHint').className = 'vol-hint';
-      document.getElementById('volHint').textContent = '';
+      live=false;
+      if(recognition){recognition.abort();recognition=null;}
+      if(rafId){cancelAnimationFrame(rafId);rafId=null;}
+      if(audioCtx){audioCtx.close();audioCtx=null;}
+      if(timerInt){clearInterval(timerInt);timerInt=null;}
+      document.getElementById('volFill').style.width='0%'; document.getElementById('volFill').className='vol-fill';
+      document.getElementById('volReading').textContent='—'; document.getElementById('volReading').className='vol-reading';
+      document.getElementById('volHint').className='vol-hint'; document.getElementById('volHint').textContent='';
       document.getElementById('recordBtn').classList.remove('live');
-      document.getElementById('btnLabel').textContent = 'start session';
+      document.getElementById('btnLabel').textContent='start session';
       document.getElementById('dot').classList.remove('blink');
-
       if (wpmBuf.length > 0) {
-        const avg = Math.round(wpmBuf.reduce((a,b) => a+b, 0) / wpmBuf.length);
-        const cls = paceClass(avg);
-        const duration = Math.floor((Date.now() - startTs) / 1000);
-
-        document.getElementById('wpm').textContent = avg;
-        document.getElementById('wpm').className = 'wpm-number ' + cls;
-        document.getElementById('paceTag').textContent = 'session avg · ' + avg + ' wpm';
-        document.getElementById('paceTag').className = 'pace-tag ' + cls;
-        document.getElementById('avgWpm').textContent = avg;
-
-        // save to localStorage
-        saveSession({
-          ts: startTs,
-          avgWpm: avg,
-          words: totalWords,
-          clarity: lastClarity,
-          duration: duration
-        });
-
-        // refresh the last session display
-        renderLastSession();
+        const avg=Math.round(wpmBuf.reduce((a,b)=>a+b,0)/wpmBuf.length), cls=paceClass(avg), duration=Math.floor((Date.now()-startTs)/1000);
+        document.getElementById('wpm').textContent=avg; document.getElementById('wpm').className='wpm-number '+cls;
+        document.getElementById('paceTag').textContent='session avg · '+avg+' wpm'; document.getElementById('paceTag').className='pace-tag '+cls;
+        document.getElementById('avgWpm').textContent=avg;
+        pendingSession={ts:startTs,avgWpm:avg,words:totalWords,clarity:lastClarity,duration,name:''};
+        document.getElementById('sheetSummary').textContent=avg+' wpm · '+totalWords+' words · '+fmtDuration(duration);
+        document.getElementById('sheetInput').value='';
+        document.querySelectorAll('.tag-chip').forEach(c=>c.classList.remove('selected'));
+        document.getElementById('sheetBackdrop').classList.add('show'); document.getElementById('sheet').classList.add('show');
       } else {
-        document.getElementById('wpm').textContent = '—';
-        document.getElementById('wpm').className = 'wpm-number idle';
-        document.getElementById('paceTag').textContent = 'tap to begin';
-        document.getElementById('paceTag').className = 'pace-tag';
+        document.getElementById('wpm').textContent='—'; document.getElementById('wpm').className='wpm-number idle';
+        document.getElementById('paceTag').textContent='tap to begin'; document.getElementById('paceTag').className='pace-tag';
       }
     }
+
+    window.selectTag=function(el){document.querySelectorAll('.tag-chip').forEach(c=>c.classList.remove('selected'));el.classList.add('selected');document.getElementById('sheetInput').value=el.dataset.tag;};
+    function commitSession(){const sessions=loadSessions();sessions.unshift(pendingSession);if(sessions.length>MAX_SESSIONS)sessions.pop();storeSessions(sessions);pendingSession=null;document.getElementById('sheetBackdrop').classList.remove('show');document.getElementById('sheet').classList.remove('show');renderLastSession();}
+    window.saveAndClose=function(){if(!pendingSession){document.getElementById('sheet').classList.remove('show');document.getElementById('sheetBackdrop').classList.remove('show');return;}pendingSession.name=document.getElementById('sheetInput').value.trim();commitSession();};
+    window.skipSave=function(){if(pendingSession)commitSession();else{document.getElementById('sheet').classList.remove('show');document.getElementById('sheetBackdrop').classList.remove('show');}};
 
     function onResult(e) {
-      let interim = '';
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        const r = e.results[i];
-        if (r.isFinal) {
-          finalTx += r[0].transcript + ' ';
-          totalWords = finalTx.trim().split(/\s+/).filter(Boolean).length;
-          document.getElementById('wordCount').textContent = totalWords;
-          if (r[0].confidence > 0) {
-            confBuf.push(r[0].confidence);
-            lastClarity = Math.round(confBuf.reduce((a,b)=>a+b,0)/confBuf.length * 100);
-            document.getElementById('clarity').textContent = lastClarity + '%';
-          }
-        } else { interim += r[0].transcript; }
-      }
-      const box = document.getElementById('txBox');
-      box.innerHTML = `<span class="tx-final">${finalTx}</span>` + (interim ? `<span class="tx-interim">${interim}</span>` : '');
-      box.scrollTop = box.scrollHeight;
-      const secs = (Date.now() - startTs) / 1000;
-      if (totalWords >= 8 && secs > 6) {
-        const w = Math.round(totalWords / secs * 60);
-        if (w > 0 && w < 400) {
-          wpmBuf.push(w); if (wpmBuf.length > 8) wpmBuf.shift();
-          const smooth = Math.round(wpmBuf.reduce((a,b)=>a+b,0) / wpmBuf.length);
-          const cls = paceClass(smooth);
-          document.getElementById('wpm').textContent = smooth;
-          document.getElementById('wpm').className = 'wpm-number ' + cls;
-          document.getElementById('paceTag').textContent = paceMsg[cls];
-          document.getElementById('paceTag').className = 'pace-tag ' + cls;
-          document.getElementById('avgWpm').textContent = Math.round(wpmBuf.reduce((a,b)=>a+b,0)/wpmBuf.length);
-        }
-      }
+      let interim='';
+      for(let i=e.resultIndex;i<e.results.length;i++){const r=e.results[i];if(r.isFinal){finalTx+=r[0].transcript+' ';totalWords=finalTx.trim().split(/\s+/).filter(Boolean).length;document.getElementById('wordCount').textContent=totalWords;if(r[0].confidence>0){confBuf.push(r[0].confidence);lastClarity=Math.round(confBuf.reduce((a,b)=>a+b,0)/confBuf.length*100);document.getElementById('clarity').textContent=lastClarity+'%';}}else{interim+=r[0].transcript;}}
+      const box=document.getElementById('txBox');
+      box.innerHTML=`<span class="tx-final">${finalTx}</span>`+(interim?`<span class="tx-interim">${interim}</span>`:'');
+      box.scrollTop=box.scrollHeight;
+      const secs=(Date.now()-startTs)/1000;
+      if(totalWords>=8&&secs>6){const w=Math.round(totalWords/secs*60);if(w>0&&w<400){wpmBuf.push(w);if(wpmBuf.length>10)wpmBuf.shift();const smooth=Math.round(wpmBuf.reduce((a,b)=>a+b,0)/wpmBuf.length),cls=paceClass(smooth);document.getElementById('wpm').textContent=smooth;document.getElementById('wpm').className='wpm-number '+cls;document.getElementById('paceTag').textContent=paceMsg[cls];document.getElementById('paceTag').className='pace-tag '+cls;document.getElementById('avgWpm').textContent=Math.round(wpmBuf.reduce((a,b)=>a+b,0)/wpmBuf.length);}}
     }
 
-    function volLoop() {
-      if (!live || !analyser) return;
-      analyser.getByteTimeDomainData(dataArr);
-      let sum = 0;
-      for (let i = 0; i < dataArr.length; i++) { const v = (dataArr[i] - 128) / 128; sum += v * v; }
-      const vol = Math.min(100, Math.round(Math.sqrt(sum / dataArr.length) * 420));
-      setVol(vol);
-      rafId = requestAnimationFrame(volLoop);
+    function volLoop(){
+      if(!live||!analyser)return;
+      analyser.getByteTimeDomainData(dataArr);let sum=0;
+      for(let i=0;i<dataArr.length;i++){const v=(dataArr[i]-128)/128;sum+=v*v;}
+      const raw=Math.min(100,Math.round(Math.sqrt(sum/dataArr.length)*500));
+      volBuf.push(raw);if(volBuf.length>7)volBuf.shift();
+      setVol(Math.round(volBuf.reduce((a,b)=>a+b,0)/volBuf.length));
+      rafId=requestAnimationFrame(volLoop);
     }
+    function setVol(v){const cls=volClass(v);document.getElementById('volFill').style.width=v+'%';document.getElementById('volFill').className='vol-fill '+cls;document.getElementById('volReading').textContent=v+'%';document.getElementById('volReading').className='vol-reading '+cls;document.getElementById('volHint').textContent=volMsg[cls];document.getElementById('volHint').className='vol-hint '+cls;}
+    function tick(){if(!startTs)return;const s=Math.floor((Date.now()-startTs)/1000);document.getElementById('timer').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
 
-    function setVol(v) {
-      const cls = volClass(v);
-      document.getElementById('volFill').style.width = v + '%';
-      document.getElementById('volFill').className = 'vol-fill ' + cls;
-      document.getElementById('volReading').textContent = v + '%';
-      document.getElementById('volReading').className = 'vol-reading ' + cls;
-      document.getElementById('volHint').textContent = volMsg[cls];
-      document.getElementById('volHint').className = 'vol-hint ' + cls;
-    }
+    let chatHistory=[];
+    window.openClaude=function(){const apiKey=localStorage.getItem(APIKEY_KEY),setup=document.getElementById('apiSetup'),chat=document.getElementById('chatArea');if(apiKey){setup.style.display='none';chat.style.display='flex';}else{setup.style.display='block';chat.style.display='none';}document.getElementById('claudeBackdrop').classList.add('show');document.getElementById('claudeSheet').classList.add('show');};
+    window.closeClaude=function(){document.getElementById('claudeBackdrop').classList.remove('show');document.getElementById('claudeSheet').classList.remove('show');};
+    window.saveApiKey=function(){const key=document.getElementById('apiKeyInput').value.trim();if(!key.startsWith('sk-ant-')){alert('That does not look right. The key should start with sk-ant-');return;}localStorage.setItem(APIKEY_KEY,key);document.getElementById('apiSetup').style.display='none';document.getElementById('chatArea').style.display='flex';};
+    window.handleKey=function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}};
+    window.sendMsg=async function(){
+      const input=document.getElementById('claudeInput'),text=input.value.trim();if(!text)return;
+      const apiKey=localStorage.getItem(APIKEY_KEY);if(!apiKey){openClaude();return;}
+      input.value='';document.getElementById('claudeSend').disabled=true;
+      const sessions=loadSessions(),ctx=sessions.length?'Recent sessions: '+sessions.slice(0,5).map(s=>fmtDate(s.ts)+': '+s.avgWpm+'wpm, '+s.words+' words'+(s.name?', "'+s.name+'"':'')).join('; '):'No sessions yet.';
+      addMsg('user',text);addMsg('thinking','thinking...');chatHistory.push({role:'user',content:text});
+      try{
+        const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:400,system:`You are a calm, intelligent speech coach inside an app called pace. The user is working on speaking pace (target 110-165 wpm) and volume. Be warm, concise, direct. One paragraph max unless asked. ${ctx}`,messages:chatHistory})});
+        const data=await res.json(),reply=data.content?.[0]?.text||'Something went wrong.';
+        removeThinking();addMsg('claude',reply);chatHistory.push({role:'assistant',content:reply});
+      }catch(e){removeThinking();addMsg('claude','Could not reach the API. Check your connection.');}
+      document.getElementById('claudeSend').disabled=false;
+    };
+    function addMsg(type,text){const msgs=document.getElementById('claudeMsgs'),div=document.createElement('div');div.className='msg '+type;div.textContent=text;msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;}
+    function removeThinking(){const el=document.querySelector('.msg.thinking');if(el)el.remove();}
 
-    function tick() {
-      if (!startTs) return;
-      const s = Math.floor((Date.now() - startTs) / 1000);
-      document.getElementById('timer').textContent = String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
-    }
-
-    if (!SpeechRec) {
-      document.getElementById('txBox').innerHTML = '<p class="no-support">Open in Chrome (Android) or Safari (iPhone iOS 14.5+) for speech recognition.</p>';
-    }
-
-    // init
+    if(!SpeechRec){document.getElementById('txBox').innerHTML='<p class="no-support">Open in Chrome (Android) or Safari (iPhone iOS 14.5+) for speech recognition.</p>';}
     renderLastSession();
-
   })();
   </script>
 </body>
