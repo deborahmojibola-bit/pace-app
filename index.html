@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>pace</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garant:ital,wght@0,300;0,400;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F8F4ED;
+      --text: #1B1814;
+      --muted: #9B8F80;
+      --accent: #B5704A;
+      --good: #5D8B6A;
+      --warn: #C0904E;
+      --bad: #B85E50;
+      --border: rgba(27,24,20,0.07);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overscroll-behavior: none; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 52px 28px 44px;
+      position: relative;
+      overflow-x: hidden;
+    }
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.028'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+    }
+    .header {
+      width: 100%; max-width: 340px;
+      display: flex; justify-content: space-between; align-items: baseline;
+      margin-bottom: 56px; position: relative; z-index: 2;
+    }
+    .logo {
+      font-family: 'Cormorant Garant', serif;
+      font-style: italic; font-weight: 300; font-size: 30px;
+      letter-spacing: -0.02em; color: var(--text);
+    }
+    .session-time { font-size: 11px; color: var(--muted); letter-spacing: 0.10em; font-weight: 300; }
+    .wpm-area {
+      display: flex; flex-direction: column; align-items: center;
+      margin-bottom: 44px; position: relative; z-index: 2;
+    }
+    .metric-label {
+      font-size: 9.5px; letter-spacing: 0.20em; color: var(--muted);
+      text-transform: uppercase; margin-bottom: 6px; font-weight: 300;
+    }
+    .wpm-number {
+      font-size: 104px; font-weight: 300; line-height: 1;
+      letter-spacing: -0.05em; color: var(--text);
+      transition: color 0.5s ease; width: 220px; text-align: center;
+    }
+    .wpm-number.slow { color: var(--warn); }
+    .wpm-number.good { color: var(--good); }
+    .wpm-number.fast { color: var(--bad); }
+    .wpm-number.idle { color: var(--muted); }
+    .pace-tag {
+      margin-top: 14px; display: inline-block;
+      font-size: 9.5px; letter-spacing: 0.14em; text-transform: uppercase;
+      padding: 5px 14px; border-radius: 100px;
+      border: 1px solid var(--border); color: var(--muted);
+      transition: all 0.45s ease; font-weight: 300;
+    }
+    .pace-tag.slow { border-color: var(--warn); color: var(--warn); background: rgba(192,144,78,0.07); }
+    .pace-tag.good { border-color: var(--good); color: var(--good); background: rgba(93,139,106,0.07); }
+    .pace-tag.fast { border-color: var(--bad);  color: var(--bad);  background: rgba(184,94,80,0.07); }
+    .vol-section {
+      width: 100%; max-width: 340px; margin-bottom: 32px;
+      position: relative; z-index: 2; opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+    .vol-section.show { opacity: 1; transform: translateY(0); }
+    .vol-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+    .vol-reading { font-size: 11px; color: var(--muted); font-weight: 300; transition: color 0.25s; }
+    .vol-reading.quiet { color: var(--warn); }
+    .vol-reading.good  { color: var(--good); }
+    .vol-reading.loud  { color: var(--bad); }
+    .vol-track {
+      height: 5px; background: rgba(27,24,20,0.07);
+      border-radius: 100px; overflow: hidden; position: relative;
+    }
+    .vol-zone {
+      position: absolute; top: 0; bottom: 0;
+      left: 18%; width: 37%;
+      background: rgba(93,139,106,0.13);
+      border-radius: 100px; pointer-events: none;
+    }
+    .vol-fill {
+      height: 100%; width: 0%; border-radius: 100px; background: var(--muted);
+      transition: width 0.07s linear, background 0.3s ease;
+    }
+    .vol-fill.quiet { background: var(--warn); }
+    .vol-fill.good  { background: var(--good); }
+    .vol-fill.loud  { background: var(--bad); }
+    .vol-hint {
+      margin-top: 7px; font-size: 9.5px; letter-spacing: 0.10em;
+      text-align: right; color: transparent;
+      transition: color 0.3s; font-weight: 300; text-transform: uppercase;
+    }
+    .vol-hint.quiet { color: var(--warn); }
+    .vol-hint.good  { color: var(--good); }
+    .vol-hint.loud  { color: var(--bad); }
+    .stats-row {
+      width: 100%; max-width: 340px; display: flex; gap: 0;
+      margin-bottom: 36px; position: relative; z-index: 2;
+      opacity: 0; transition: opacity 0.4s ease 0.1s;
+    }
+    .stats-row.show { opacity: 1; }
+    .stat { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+    .stat + .stat { padding-left: 20px; border-left: 1px solid var(--border); margin-left: 20px; }
+    .stat-label { font-size: 9px; letter-spacing: 0.18em; color: var(--muted); text-transform: uppercase; font-weight: 300; }
+    .stat-value { font-size: 22px; font-weight: 300; color: var(--text); letter-spacing: -0.03em; }
+    .tx-section {
+      width: 100%; max-width: 340px; flex: 1;
+      display: flex; flex-direction: column;
+      margin-bottom: 36px; position: relative; z-index: 2;
+    }
+    .tx-box { min-height: 72px; max-height: 130px; overflow-y: auto; scrollbar-width: none; }
+    .tx-box::-webkit-scrollbar { display: none; }
+    .tx-final { font-family: 'Cormorant Garant', serif; font-weight: 300; font-size: 18px; line-height: 1.70; color: var(--text); letter-spacing: 0.01em; }
+    .tx-interim { font-family: 'Cormorant Garant', serif; font-weight: 300; font-size: 18px; line-height: 1.70; color: var(--muted); font-style: italic; }
+    .tx-placeholder { font-family: 'Cormorant Garant', serif; font-style: italic; font-weight: 300; font-size: 17px; color: var(--muted); line-height: 1.65; }
+    .btn-wrap { width: 100%; max-width: 340px; position: relative; z-index: 2; }
+    .record-btn {
+      width: 100%; height: 62px; border: none; border-radius: 100px;
+      background: var(--text); color: var(--bg);
+      font-family: 'DM Mono', monospace; font-weight: 300;
+      font-size: 11.5px; letter-spacing: 0.17em; text-transform: uppercase;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      gap: 10px; transition: background 0.3s ease, transform 0.15s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .record-btn:active { transform: scale(0.975); }
+    .record-btn.live { background: var(--accent); }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: 0.7; flex-shrink: 0; }
+    .dot.blink { animation: blink 1.3s ease-in-out infinite; }
+    @keyframes blink { 0%, 100% { opacity: 0.7; } 50% { opacity: 0.15; } }
+    .no-support { font-size: 13px; color: var(--bad); line-height: 1.65; text-align: center; padding: 16px 0; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <span class="logo">pace</span>
+    <span class="session-time" id="timer">00:00</span>
+  </div>
+  <div class="wpm-area">
+    <div class="metric-label">words per minute</div>
+    <div class="wpm-number idle" id="wpm">—</div>
+    <div class="pace-tag" id="paceTag">tap to begin</div>
+  </div>
+  <div class="vol-section" id="volSection">
+    <div class="vol-header">
+      <span class="metric-label">volume</span>
+      <span class="vol-reading" id="volReading">—</span>
+    </div>
+    <div class="vol-track">
+      <div class="vol-zone"></div>
+      <div class="vol-fill" id="volFill"></div>
+    </div>
+    <div class="vol-hint" id="volHint"></div>
+  </div>
+  <div class="stats-row" id="statsRow">
+    <div class="stat"><span class="stat-label">words</span><span class="stat-value" id="wordCount">0</span></div>
+    <div class="stat"><span class="stat-label">avg wpm</span><span class="stat-value" id="avgWpm">—</span></div>
+    <div class="stat"><span class="stat-label">clarity</span><span class="stat-value" id="clarity">—</span></div>
+  </div>
+  <div class="tx-section">
+    <div class="metric-label" style="margin-bottom:11px">transcript</div>
+    <div class="tx-box" id="txBox">
+      <span class="tx-placeholder">your words will appear here...</span>
+    </div>
+  </div>
+  <div class="btn-wrap">
+    <button class="record-btn" id="recordBtn" onclick="toggle()">
+      <span class="dot" id="dot"></span>
+      <span id="btnLabel">start session</span>
+    </button>
+  </div>
+  <script>
+  (() => {
+    let live = false, audioCtx, analyser, micSrc, rafId, recognition;
+    let startTs = null, timerInt = null, totalWords = 0, wpmBuf = [], confBuf = [], finalTx = '', dataArr;
+    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    function paceClass(w) { return w < 110 ? 'slow' : w <= 165 ? 'good' : 'fast'; }
+    const paceMsg = { slow: 'take your time', good: 'good pace', fast: 'breathe. slow down.' };
+    function volClass(v) { return v < 18 ? 'quiet' : v <= 55 ? 'good' : 'loud'; }
+    const volMsg = { quiet: 'a little louder', good: 'clear', loud: 'dial it back' };
+    window.toggle = async function() { live ? stop() : await start(); };
+    async function start() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 512; analyser.smoothingTimeConstant = 0.75;
+        micSrc = audioCtx.createMediaStreamSource(stream);
+        micSrc.connect(analyser);
+        dataArr = new Uint8Array(analyser.frequencyBinCount);
+        if (SpeechRec) {
+          recognition = new SpeechRec();
+          recognition.continuous = true; recognition.interimResults = true; recognition.lang = 'en-GB';
+          recognition.onresult = onResult;
+          recognition.onerror = e => { if (e.error !== 'no-speech' && e.error !== 'aborted') console.warn(e.error); };
+          recognition.onend = () => { if (live) recognition.start(); };
+          recognition.start();
+        }
+        live = true; startTs = Date.now(); totalWords = 0; wpmBuf = []; confBuf = []; finalTx = '';
+        document.getElementById('recordBtn').classList.add('live');
+        document.getElementById('btnLabel').textContent = 'stop session';
+        document.getElementById('dot').classList.add('blink');
+        document.getElementById('volSection').classList.add('show');
+        document.getElementById('statsRow').classList.add('show');
+        document.getElementById('txBox').innerHTML = '';
+        document.getElementById('wpm').className = 'wpm-number';
+        timerInt = setInterval(tick, 1000); volLoop();
+      } catch(e) { alert('Please allow microphone access to use pace.'); }
+    }
+    function stop() {
+      live = false;
+      if (recognition) { recognition.abort(); recognition = null; }
+      if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+      if (audioCtx) { audioCtx.close(); audioCtx = null; }
+      if (timerInt) { clearInterval(timerInt); timerInt = null; }
+      document.getElementById('volFill').style.width = '0%';
+      document.getElementById('volFill').className = 'vol-fill';
+      document.getElementById('volReading').textContent = '—';
+      document.getElementById('volReading').className = 'vol-reading';
+      document.getElementById('volHint').className = 'vol-hint';
+      document.getElementById('volHint').textContent = '';
+      document.getElementById('recordBtn').classList.remove('live');
+      document.getElementById('btnLabel').textContent = 'start session';
+      document.getElementById('dot').classList.remove('blink');
+      if (wpmBuf.length > 0) {
+        const avg = Math.round(wpmBuf.reduce((a,b) => a+b, 0) / wpmBuf.length);
+        const cls = paceClass(avg);
+        document.getElementById('wpm').textContent = avg;
+        document.getElementById('wpm').className = 'wpm-number ' + cls;
+        document.getElementById('paceTag').textContent = 'session avg · ' + avg + ' wpm';
+        document.getElementById('paceTag').className = 'pace-tag ' + cls;
+        document.getElementById('avgWpm').textContent = avg;
+      } else {
+        document.getElementById('wpm').textContent = '—';
+        document.getElementById('wpm').className = 'wpm-number idle';
+        document.getElementById('paceTag').textContent = 'tap to begin';
+        document.getElementById('paceTag').className = 'pace-tag';
+      }
+    }
+    function onResult(e) {
+      let interim = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const r = e.results[i];
+        if (r.isFinal) {
+          finalTx += r[0].transcript + ' ';
+          totalWords = finalTx.trim().split(/\s+/).filter(Boolean).length;
+          document.getElementById('wordCount').textContent = totalWords;
+          if (r[0].confidence > 0) {
+            confBuf.push(r[0].confidence);
+            document.getElementById('clarity').textContent = Math.round(confBuf.reduce((a,b)=>a+b,0)/confBuf.length * 100) + '%';
+          }
+        } else { interim += r[0].transcript; }
+      }
+      const box = document.getElementById('txBox');
+      box.innerHTML = `<span class="tx-final">${finalTx}</span>` + (interim ? `<span class="tx-interim">${interim}</span>` : '');
+      box.scrollTop = box.scrollHeight;
+      const secs = (Date.now() - startTs) / 1000;
+      if (totalWords >= 8 && secs > 6) {
+        const w = Math.round(totalWords / secs * 60);
+        if (w > 0 && w < 400) {
+          wpmBuf.push(w); if (wpmBuf.length > 8) wpmBuf.shift();
+          const smooth = Math.round(wpmBuf.reduce((a,b)=>a+b,0) / wpmBuf.length);
+          const cls = paceClass(smooth);
+          document.getElementById('wpm').textContent = smooth;
+          document.getElementById('wpm').className = 'wpm-number ' + cls;
+          document.getElementById('paceTag').textContent = paceMsg[cls];
+          document.getElementById('paceTag').className = 'pace-tag ' + cls;
+          document.getElementById('avgWpm').textContent = Math.round(wpmBuf.reduce((a,b)=>a+b,0)/wpmBuf.length);
+        }
+      }
+    }
+    function volLoop() {
+      if (!live || !analyser) return;
+      analyser.getByteTimeDomainData(dataArr);
+      let sum = 0;
+      for (let i = 0; i < dataArr.length; i++) { const v = (dataArr[i] - 128) / 128; sum += v * v; }
+      const vol = Math.min(100, Math.round(Math.sqrt(sum / dataArr.length) * 420));
+      setVol(vol);
+      rafId = requestAnimationFrame(volLoop);
+    }
+    function setVol(v) {
+      const cls = volClass(v);
+      document.getElementById('volFill').style.width = v + '%';
+      document.getElementById('volFill').className = 'vol-fill ' + cls;
+      document.getElementById('volReading').textContent = v + '%';
+      document.getElementById('volReading').className = 'vol-reading ' + cls;
+      document.getElementById('volHint').textContent = volMsg[cls];
+      document.getElementById('volHint').className = 'vol-hint ' + cls;
+    }
+    function tick() {
+      if (!startTs) return;
+      const s = Math.floor((Date.now() - startTs) / 1000);
+      document.getElementById('timer').textContent = String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
+    }
+    if (!SpeechRec) {
+      document.getElementById('txBox').innerHTML = '<p class="no-support">Open in Chrome (Android) or Safari (iPhone iOS 14.5+) for speech recognition.</p>';
+    }
+  })();
+  </script>
+</body>
+</html>
