@@ -43,7 +43,7 @@
     .header {
       width: 100%; max-width: 340px;
       display: flex; justify-content: space-between; align-items: baseline;
-      margin-bottom: 56px; position: relative; z-index: 2;
+      margin-bottom: 40px; position: relative; z-index: 2;
     }
     .logo {
       font-family: 'Cormorant Garant', serif;
@@ -51,6 +51,81 @@
       letter-spacing: -0.02em; color: var(--text);
     }
     .session-time { font-size: 11px; color: var(--muted); letter-spacing: 0.10em; font-weight: 300; }
+
+    /* ── last session banner ── */
+    .last-session {
+      width: 100%; max-width: 340px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-bottom: 32px;
+      position: relative; z-index: 2;
+      display: none;
+    }
+    .last-session.show { display: block; }
+    .last-session-label {
+      font-size: 8.5px; letter-spacing: 0.20em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 10px; font-weight: 300;
+    }
+    .last-session-row {
+      display: flex; gap: 0; align-items: flex-end;
+    }
+    .ls-stat { flex: 1; }
+    .ls-stat + .ls-stat { padding-left: 16px; border-left: 1px solid var(--border); margin-left: 16px; }
+    .ls-val {
+      font-size: 19px; font-weight: 300; letter-spacing: -0.03em;
+      color: var(--text); line-height: 1;
+    }
+    .ls-key {
+      font-size: 8px; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--muted); margin-top: 3px; font-weight: 300;
+    }
+    .pb-tag {
+      display: inline-block; font-size: 8px; letter-spacing: 0.14em;
+      text-transform: uppercase; padding: 2px 8px; border-radius: 100px;
+      border: 1px solid var(--good); color: var(--good);
+      background: rgba(93,139,106,0.07); margin-top: 4px;
+      font-weight: 300;
+    }
+
+    /* ── history panel ── */
+    .history-toggle {
+      width: 100%; max-width: 340px;
+      background: none; border: none; cursor: pointer;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0 0 12px;
+      position: relative; z-index: 2;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .history-toggle-label {
+      font-size: 8.5px; letter-spacing: 0.20em; text-transform: uppercase;
+      color: var(--muted); font-weight: 300; font-family: 'DM Mono', monospace;
+    }
+    .history-toggle-arrow {
+      font-size: 10px; color: var(--muted);
+      transition: transform 0.25s ease;
+    }
+    .history-toggle-arrow.open { transform: rotate(180deg); }
+    .history-panel {
+      width: 100%; max-width: 340px;
+      max-height: 0; overflow: hidden;
+      transition: max-height 0.35s ease;
+      position: relative; z-index: 2;
+      margin-bottom: 0;
+    }
+    .history-panel.open { max-height: 300px; margin-bottom: 28px; }
+    .history-list { display: flex; flex-direction: column; gap: 8px; padding-bottom: 4px; }
+    .history-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px;
+    }
+    .hi-date { font-size: 9px; color: var(--muted); letter-spacing: 0.08em; font-weight: 300; }
+    .hi-wpm { font-size: 16px; font-weight: 300; letter-spacing: -0.03em; }
+    .hi-wpm.slow { color: var(--warn); }
+    .hi-wpm.good { color: var(--good); }
+    .hi-wpm.fast { color: var(--bad); }
+    .hi-meta { font-size: 9px; color: var(--muted); text-align: right; font-weight: 300; }
+
     .wpm-area {
       display: flex; flex-direction: column; align-items: center;
       margin-bottom: 44px; position: relative; z-index: 2;
@@ -151,6 +226,7 @@
     .dot.blink { animation: blink 1.3s ease-in-out infinite; }
     @keyframes blink { 0%, 100% { opacity: 0.7; } 50% { opacity: 0.15; } }
     .no-support { font-size: 13px; color: var(--bad); line-height: 1.65; text-align: center; padding: 16px 0; }
+    .divider { width: 100%; max-width: 340px; height: 1px; background: var(--border); margin-bottom: 24px; position: relative; z-index: 2; }
   </style>
 </head>
 <body>
@@ -158,11 +234,48 @@
     <span class="logo">pace</span>
     <span class="session-time" id="timer">00:00</span>
   </div>
+
+  <!-- last session summary -->
+  <div class="last-session" id="lastSession">
+    <div class="last-session-label">last session</div>
+    <div class="last-session-row">
+      <div class="ls-stat">
+        <div class="ls-val" id="lsWpm">—</div>
+        <div class="ls-key">avg wpm</div>
+        <div id="lsPb"></div>
+      </div>
+      <div class="ls-stat">
+        <div class="ls-val" id="lsWords">—</div>
+        <div class="ls-key">words</div>
+      </div>
+      <div class="ls-stat">
+        <div class="ls-val" id="lsClarity">—</div>
+        <div class="ls-key">clarity</div>
+      </div>
+      <div class="ls-stat">
+        <div class="ls-val" id="lsDuration">—</div>
+        <div class="ls-key">duration</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- session history accordion -->
+  <button class="history-toggle" id="historyToggle" onclick="toggleHistory()" style="display:none">
+    <span class="history-toggle-label">session history</span>
+    <span class="history-toggle-arrow" id="historyArrow">▾</span>
+  </button>
+  <div class="history-panel" id="historyPanel">
+    <div class="history-list" id="historyList"></div>
+  </div>
+
+  <div class="divider" id="divider" style="display:none"></div>
+
   <div class="wpm-area">
     <div class="metric-label">words per minute</div>
     <div class="wpm-number idle" id="wpm">—</div>
     <div class="pace-tag" id="paceTag">tap to begin</div>
   </div>
+
   <div class="vol-section" id="volSection">
     <div class="vol-header">
       <span class="metric-label">volume</span>
@@ -174,33 +287,127 @@
     </div>
     <div class="vol-hint" id="volHint"></div>
   </div>
+
   <div class="stats-row" id="statsRow">
     <div class="stat"><span class="stat-label">words</span><span class="stat-value" id="wordCount">0</span></div>
     <div class="stat"><span class="stat-label">avg wpm</span><span class="stat-value" id="avgWpm">—</span></div>
     <div class="stat"><span class="stat-label">clarity</span><span class="stat-value" id="clarity">—</span></div>
   </div>
+
   <div class="tx-section">
     <div class="metric-label" style="margin-bottom:11px">transcript</div>
     <div class="tx-box" id="txBox">
       <span class="tx-placeholder">your words will appear here...</span>
     </div>
   </div>
+
   <div class="btn-wrap">
     <button class="record-btn" id="recordBtn" onclick="toggle()">
       <span class="dot" id="dot"></span>
       <span id="btnLabel">start session</span>
     </button>
   </div>
+
   <script>
   (() => {
+    const STORAGE_KEY = 'pace_sessions';
+    const MAX_SESSIONS = 10;
+
+    // ── storage helpers ─────────────────────────────────
+    function loadSessions() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+      catch(e) { return []; }
+    }
+
+    function saveSession(session) {
+      const sessions = loadSessions();
+      sessions.unshift(session);
+      if (sessions.length > MAX_SESSIONS) sessions.pop();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
+    }
+
+    function personalBest() {
+      const sessions = loadSessions();
+      if (!sessions.length) return null;
+      return Math.max(...sessions.map(s => s.avgWpm));
+    }
+
+    function fmtDuration(secs) {
+      const m = Math.floor(secs / 60), s = secs % 60;
+      return m > 0 ? m + 'm ' + String(s).padStart(2,'0') + 's' : s + 's';
+    }
+
+    function fmtDate(ts) {
+      const d = new Date(ts);
+      return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
+        + ' ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    // ── render on load ──────────────────────────────────
+    function renderLastSession() {
+      const sessions = loadSessions();
+      if (!sessions.length) return;
+
+      const last = sessions[0];
+      const pb = personalBest();
+      const paceClass = w => w < 110 ? 'slow' : w <= 165 ? 'good' : 'fast';
+
+      document.getElementById('lastSession').classList.add('show');
+      document.getElementById('lsWpm').textContent = last.avgWpm;
+      document.getElementById('lsWpm').className = 'ls-val ' + paceClass(last.avgWpm);
+      document.getElementById('lsWords').textContent = last.words;
+      document.getElementById('lsClarity').textContent = last.clarity ? last.clarity + '%' : '—';
+      document.getElementById('lsDuration').textContent = fmtDuration(last.duration);
+
+      if (last.avgWpm === pb) {
+        document.getElementById('lsPb').innerHTML = '<span class="pb-tag">personal best</span>';
+      }
+
+      if (sessions.length > 1) {
+        document.getElementById('historyToggle').style.display = 'flex';
+        document.getElementById('divider').style.display = 'block';
+        renderHistoryList(sessions);
+      }
+    }
+
+    function renderHistoryList(sessions) {
+      const pb = personalBest();
+      const paceClass = w => w < 110 ? 'slow' : w <= 165 ? 'good' : 'fast';
+      const list = document.getElementById('historyList');
+      list.innerHTML = sessions.slice(1).map(s => `
+        <div class="history-item">
+          <div>
+            <div class="hi-date">${fmtDate(s.ts)}</div>
+            <div class="hi-wpm ${paceClass(s.avgWpm)}">${s.avgWpm} <span style="font-size:11px;color:var(--muted)">wpm</span>${s.avgWpm === pb ? ' <span style="font-size:8px;color:var(--good);letter-spacing:0.1em">PB</span>' : ''}</div>
+          </div>
+          <div class="hi-meta">
+            ${s.words} words<br>
+            ${fmtDuration(s.duration)}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    window.toggleHistory = function() {
+      const panel = document.getElementById('historyPanel');
+      const arrow = document.getElementById('historyArrow');
+      panel.classList.toggle('open');
+      arrow.classList.toggle('open');
+    };
+
+    // ── recording state ─────────────────────────────────
     let live = false, audioCtx, analyser, micSrc, rafId, recognition;
     let startTs = null, timerInt = null, totalWords = 0, wpmBuf = [], confBuf = [], finalTx = '', dataArr;
+    let lastClarity = null;
+
     const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
     function paceClass(w) { return w < 110 ? 'slow' : w <= 165 ? 'good' : 'fast'; }
     const paceMsg = { slow: 'take your time', good: 'good pace', fast: 'breathe. slow down.' };
     function volClass(v) { return v < 18 ? 'quiet' : v <= 55 ? 'good' : 'loud'; }
     const volMsg = { quiet: 'a little louder', good: 'clear', loud: 'dial it back' };
+
     window.toggle = async function() { live ? stop() : await start(); };
+
     async function start() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -218,7 +425,7 @@
           recognition.onend = () => { if (live) recognition.start(); };
           recognition.start();
         }
-        live = true; startTs = Date.now(); totalWords = 0; wpmBuf = []; confBuf = []; finalTx = '';
+        live = true; startTs = Date.now(); totalWords = 0; wpmBuf = []; confBuf = []; finalTx = ''; lastClarity = null;
         document.getElementById('recordBtn').classList.add('live');
         document.getElementById('btnLabel').textContent = 'stop session';
         document.getElementById('dot').classList.add('blink');
@@ -229,12 +436,14 @@
         timerInt = setInterval(tick, 1000); volLoop();
       } catch(e) { alert('Please allow microphone access to use pace.'); }
     }
+
     function stop() {
       live = false;
       if (recognition) { recognition.abort(); recognition = null; }
       if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
       if (audioCtx) { audioCtx.close(); audioCtx = null; }
       if (timerInt) { clearInterval(timerInt); timerInt = null; }
+
       document.getElementById('volFill').style.width = '0%';
       document.getElementById('volFill').className = 'vol-fill';
       document.getElementById('volReading').textContent = '—';
@@ -244,14 +453,29 @@
       document.getElementById('recordBtn').classList.remove('live');
       document.getElementById('btnLabel').textContent = 'start session';
       document.getElementById('dot').classList.remove('blink');
+
       if (wpmBuf.length > 0) {
         const avg = Math.round(wpmBuf.reduce((a,b) => a+b, 0) / wpmBuf.length);
         const cls = paceClass(avg);
+        const duration = Math.floor((Date.now() - startTs) / 1000);
+
         document.getElementById('wpm').textContent = avg;
         document.getElementById('wpm').className = 'wpm-number ' + cls;
         document.getElementById('paceTag').textContent = 'session avg · ' + avg + ' wpm';
         document.getElementById('paceTag').className = 'pace-tag ' + cls;
         document.getElementById('avgWpm').textContent = avg;
+
+        // save to localStorage
+        saveSession({
+          ts: startTs,
+          avgWpm: avg,
+          words: totalWords,
+          clarity: lastClarity,
+          duration: duration
+        });
+
+        // refresh the last session display
+        renderLastSession();
       } else {
         document.getElementById('wpm').textContent = '—';
         document.getElementById('wpm').className = 'wpm-number idle';
@@ -259,6 +483,7 @@
         document.getElementById('paceTag').className = 'pace-tag';
       }
     }
+
     function onResult(e) {
       let interim = '';
       for (let i = e.resultIndex; i < e.results.length; i++) {
@@ -269,7 +494,8 @@
           document.getElementById('wordCount').textContent = totalWords;
           if (r[0].confidence > 0) {
             confBuf.push(r[0].confidence);
-            document.getElementById('clarity').textContent = Math.round(confBuf.reduce((a,b)=>a+b,0)/confBuf.length * 100) + '%';
+            lastClarity = Math.round(confBuf.reduce((a,b)=>a+b,0)/confBuf.length * 100);
+            document.getElementById('clarity').textContent = lastClarity + '%';
           }
         } else { interim += r[0].transcript; }
       }
@@ -291,6 +517,7 @@
         }
       }
     }
+
     function volLoop() {
       if (!live || !analyser) return;
       analyser.getByteTimeDomainData(dataArr);
@@ -300,6 +527,7 @@
       setVol(vol);
       rafId = requestAnimationFrame(volLoop);
     }
+
     function setVol(v) {
       const cls = volClass(v);
       document.getElementById('volFill').style.width = v + '%';
@@ -309,14 +537,20 @@
       document.getElementById('volHint').textContent = volMsg[cls];
       document.getElementById('volHint').className = 'vol-hint ' + cls;
     }
+
     function tick() {
       if (!startTs) return;
       const s = Math.floor((Date.now() - startTs) / 1000);
       document.getElementById('timer').textContent = String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
     }
+
     if (!SpeechRec) {
       document.getElementById('txBox').innerHTML = '<p class="no-support">Open in Chrome (Android) or Safari (iPhone iOS 14.5+) for speech recognition.</p>';
     }
+
+    // init
+    renderLastSession();
+
   })();
   </script>
 </body>
